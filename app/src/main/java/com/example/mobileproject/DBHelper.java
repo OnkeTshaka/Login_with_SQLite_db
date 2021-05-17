@@ -10,13 +10,14 @@ import android.service.controls.actions.BooleanAction;
 public class DBHelper extends SQLiteOpenHelper {
     public DBHelper(Context context){
         //Database name
-        super(context,"Onke.db",null,1);
+        super(context,"Onke.db",null,2);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
         //Create table in database
         db.execSQL("create table users(username Text primary key,password Text)");
+        db.execSQL("create table products(name Text primary key,price Text)");
     }
 
     @Override
@@ -24,6 +25,7 @@ public class DBHelper extends SQLiteOpenHelper {
         //Delete or drop database
 //        db.execSQL("drop table if exists users");
         db.execSQL("create table if not exists users(username Text primary key,password Text)");
+        db.execSQL("create table if not exists products(name Text primary key,price Text)");
     }
     public Boolean insertData(String username, String password){
 
@@ -64,5 +66,75 @@ public class DBHelper extends SQLiteOpenHelper {
         else{
             return  false;
         }
+    }
+    //Products
+    public Boolean addData(String name, String price){
+
+        //Insert Data in to the database
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("name",name);
+        contentValues.put("price",price);
+        //Store the data
+        long result = db.insert("products",null,contentValues);
+
+        // negative if it failed to insert data in db
+        if(result == -1){
+            return false;
+        }
+        else{
+            return  true;
+        }
+    }
+    public Boolean updateData(String name, String price){
+
+        //Insert Data in to the database
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("name",name);
+        contentValues.put("price",price);
+        //Cursor for selecting data
+        //Cursor object will store the data
+        Cursor cursor =db.rawQuery("Select * from products where name =?",new String[]{name});
+        if(cursor.getCount()>0){
+             //Store the data
+            long result = db.update("products",contentValues,"name=?",new String[]{name});
+
+            // negative if it failed to insert data in db
+            if(result == -1){
+                return false;
+            }
+            else{
+                return  true;
+            }
+        }
+        else{
+            return false;
+        }
+
+    }
+    public Boolean deleteData(String name) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery("Select * from products where name =?", new String[]{name});
+        if (cursor.getCount() > 0) {
+            //Store the data
+            long result = db.delete("products", "name=?", new String[]{name});
+
+            // negative if it failed to insert data in db
+            if (result == -1) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
+    public Cursor getData() {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery("Select * from products", null);
+        return cursor;
     }
 }
